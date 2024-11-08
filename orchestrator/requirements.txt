@@ -1,1 +1,2 @@
 requests==2.26.0
+transitions==0.8.3
