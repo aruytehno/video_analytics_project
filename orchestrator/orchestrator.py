@@ -16,3 +16,13 @@ class Orchestrator:
     def get_state(self):
         return self.state
 
+    def change_state(self, new_state):
+        try:
+            # Обработка и проверка состояния
+            if new_state in self.states:
+                self.state = new_state
+            else:
+                raise ValueError("Invalid state")
+        except Exception as e:
+            print("Ошибка изменения состояния:", str(e))
+
