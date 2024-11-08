@@ -9,7 +9,7 @@ class VideoRunner:
 
     def process_frame(self, frame):
         _, img_encoded = cv2.imencode('.jpg', frame)
-        response = requests.post(self.inference_url, data=img_encoded.tostring())
+        response = requests.post(self.inference_url, files={"file": img_encoded.tobytes()})
         print("Inference response:", response.json())
 
     def run(self):

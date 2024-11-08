@@ -11,7 +11,7 @@ class StateChange(BaseModel):
 
 @app.get("/scenario/{id}")
 def get_scenario(id: int):
-    return {"id": id, "status": state["status"]}
+    return {"id": id, "status": state["status"], "parameters": {"example_param": "value"}}
 
 @app.post("/scenario/{id}/state")
 def change_scenario_state(id: int, state_change: StateChange):
