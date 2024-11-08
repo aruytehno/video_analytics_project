@@ -1,14 +1,15 @@
-# Используем легковесный Python-образ
+# Dockerfile для api
 FROM python:3.9-slim
 
-# Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Копируем содержимое директории api в контейнер
-COPY . .
+# Копируем весь проект
+COPY . /app
 
-# Устанавливаем зависимости, если есть requirements.txt
+# Устанавливаем зависимости
 RUN pip install -r requirements.txt
 
-# Запускаем скрипт main.py при старте контейнера
+# Указываем PYTHONPATH, чтобы найти orchestrator
+ENV PYTHONPATH=/app:$PYTHONPATH
+
 CMD ["python", "main.py"]

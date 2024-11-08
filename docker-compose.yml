@@ -13,25 +13,30 @@ services:
       - INFERENCE_PORT=8003
     networks:
       - app-network
+    entrypoint: ["./wait-for-it.sh", "orchestrator:8002", "--", "./wait-for-it.sh", "inference:8003", "--", "python", "main.py"] # Ожидаем, пока orchestrator и inference будут готовы
 
   orchestrator:
     build: ./orchestrator
     ports:
-      - "8002:8002"  # Экспонируем порт для orchestrator
+      - "8002:8002"
     networks:
       - app-network
+    # Добавим начальный скрипт ожидания, чтобы orchestrator запускался только после запуска других сервисов
+    entrypoint: ["./wait-for-it.sh", "inference:8003", "--", "python", "orchestrator.py"]
 
   runner:
     build: ./runner
     depends_on:
       - inference
     ports:
-      - "8001:8001"  # Экспонируем порт для runner
+      - "8001:8001"
     environment:
       - INFERENCE_HOST=inference
       - INFERENCE_PORT=8003
     networks:
       - app-network
+    # Ожидаем, пока inference будет готово
+    entrypoint: ["./wait-for-it.sh", "inference:8003", "--", "python", "runner.py"]
 
   inference:
     build: ./inference
@@ -39,8 +44,12 @@ services:
       - "8003:8003"
     networks:
       - app-network
+    # В случае с inference не нужно ожидать, так как он не зависит от других сервисов
+    command: ["python", "inference.py"]
 
-# Определение общей сети для удобного взаимодействия между контейнерами
 networks:
   app-network:
     driver: bridge
+
+# Добавление wait-for-it.sh для проверки готовности контейнеров
+# Поместите wait-for-it.sh в корень проекта или подключите его из другого места

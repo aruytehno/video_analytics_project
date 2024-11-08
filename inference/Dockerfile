@@ -1,14 +1,17 @@
-# Используем легковесный Python-образ
+# Используйте подходящий базовый образ
 FROM python:3.9-slim
 
-# Устанавливаем рабочую директорию
+# Установите рабочую директорию
 WORKDIR /app
 
-# Копируем содержимое директории inference в контейнер
+# Скопируйте файл с зависимостями в контейнер
+COPY requirements.txt .
+
+# Установите зависимости
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Скопируйте код приложения в контейнер
 COPY . .
 
-# Устанавливаем зависимости, если есть requirements.txt
-RUN pip install -r requirements.txt
-
-# Запускаем скрипт inference.py при старте контейнера
+# Запустите приложение
 CMD ["python", "inference.py"]
