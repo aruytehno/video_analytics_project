@@ -4,10 +4,19 @@ services:
     build: ./api
     ports:
       - "8000:8000"
+    depends_on:
+      - orchestrator
+      - inference
   orchestrator:
     build: ./orchestrator
+    ports:
+      - "8002:8002"  # Экспонируем порт для orchestrator
   runner:
     build: ./runner
+    depends_on:
+      - inference
+    ports:
+      - "8001:8001"  # Экспонируем порт для runner
   inference:
     build: ./inference
     ports:

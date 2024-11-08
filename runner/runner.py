@@ -1,6 +1,11 @@
 import cv2
 import requests
 import time
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 class VideoRunner:
     def __init__(self, video_source="video.mp4", inference_url="http://inference:8003/inference"):
@@ -15,9 +20,9 @@ class VideoRunner:
         _, img_encoded = cv2.imencode('.jpg', frame)
         try:
             response = requests.post(self.inference_url, files={"file": img_encoded.tobytes()})
-            print("Inference response:", response.json())
+            logger.info("Inference response: %s", response.json())
         except requests.RequestException as e:
-            print("Ошибка отправки запроса инференсу:", e)
+            logger.error("Ошибка отправки запроса инференсу: %s", e)
 
     def run(self):
         cap = cv2.VideoCapture(self.video_source)

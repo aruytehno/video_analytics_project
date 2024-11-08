@@ -16,7 +16,6 @@ class Orchestrator:
         return self.state
 
     def change_state(self, new_state):
-        # Сопоставление состояний с триггерами
         triggers = {
             "init_startup": self.startup,
             "in_startup_processing": self.processing_startup,
@@ -26,7 +25,11 @@ class Orchestrator:
             "inactive": self.deactivate,
         }
         if new_state in triggers:
+            if self.state == new_state:
+                print(f"Состояние уже установлено: {new_state}")
+                return
             try:
                 triggers[new_state]()  # Запуск соответствующего триггера
             except Exception as e:
                 print("Ошибка при изменении состояния:", str(e))
+
