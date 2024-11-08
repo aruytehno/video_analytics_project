@@ -1,4 +1,3 @@
-version: '3'
 services:
   api:
     build: ./api
@@ -7,17 +6,41 @@ services:
     depends_on:
       - orchestrator
       - inference
+    environment:
+      - ORCHESTRATOR_HOST=orchestrator
+      - ORCHESTRATOR_PORT=8002
+      - INFERENCE_HOST=inference
+      - INFERENCE_PORT=8003
+    networks:
+      - app-network
+
   orchestrator:
     build: ./orchestrator
     ports:
       - "8002:8002"  # Экспонируем порт для orchestrator
+    networks:
+      - app-network
+
   runner:
     build: ./runner
     depends_on:
       - inference
     ports:
       - "8001:8001"  # Экспонируем порт для runner
+    environment:
+      - INFERENCE_HOST=inference
+      - INFERENCE_PORT=8003
+    networks:
+      - app-network
+
   inference:
     build: ./inference
     ports:
       - "8003:8003"
+    networks:
+      - app-network
+
+# Определение общей сети для удобного взаимодействия между контейнерами
+networks:
+  app-network:
+    driver: bridge
