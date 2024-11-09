@@ -1,14 +1,15 @@
-# Используем легковесный Python-образ
+# Легковесный Python-образ
 FROM python:3.9-slim
 
-# Устанавливаем рабочую директорию
+# Установка рабочей директории
 WORKDIR /app
 
-# Копируем содержимое директории runner в контейнер
+# Копирование requirements.txt и установка зависимостей
+COPY requirements.txt /app/
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Копирование исходного кода приложения
 COPY . .
 
-# Устанавливаем зависимости, если есть requirements.txt
-RUN pip install -r requirements.txt
-
-# Запускаем скрипт runner.py при старте контейнера
+# Запуск VideoRunner
 CMD ["python", "runner.py"]
