@@ -1,14 +1,15 @@
-# Используем легковесный Python-образ
+# Легковесный Python-образ
 FROM python:3.9-slim
 
-# Устанавливаем рабочую директорию
+# Установка рабочей директории
 WORKDIR /app
 
-# Копируем содержимое директории orchestrator в контейнер
-COPY . .
-
-# Устанавливаем зависимости, если есть requirements.txt
+# Копирование requirements.txt и установка зависимостей
+COPY requirements.txt /app/
 RUN pip install -r requirements.txt
 
-# Запускаем скрипт orchestrator.py при старте контейнера
+# Копирование исходного кода приложения
+COPY . .
+
+# Запуск Orchestrator
 CMD ["python", "orchestrator.py"]

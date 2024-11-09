@@ -1,5 +1,4 @@
 from transitions import Machine
-
 from runner.runner import logger
 
 
@@ -41,9 +40,9 @@ class Orchestrator:
         self.machine.add_transition(trigger="processing_startup", source="init_startup", dest="in_startup_processing")
         self.machine.add_transition(trigger="activate", source="in_startup_processing", dest="active")
         self.machine.add_transition(trigger="shutdown", source="active", dest="init_shutdown")
-        self.machine.add_transition(trigger="processing_shutdown", source="init_shutdown",
-                                    dest="in_shutdown_processing")
+        self.machine.add_transition(trigger="processing_shutdown", source="init_shutdown", dest="in_shutdown_processing")
         self.machine.add_transition(trigger="deactivate", source="in_shutdown_processing", dest="inactive")
+        logger.info("Orchestrator initialized with state: 'inactive'")
 
     def get_state(self):
         """
@@ -52,6 +51,7 @@ class Orchestrator:
         Возвращает:
             str: Текущее состояние автомата.
         """
+        logger.debug(f"Current state: {self.state}")
         return self.state
 
     def change_state(self, new_state):
@@ -76,12 +76,18 @@ class Orchestrator:
             "in_shutdown_processing": self.processing_shutdown,
             "inactive": self.deactivate,
         }
-        if new_state in triggers:
-            if self.state == new_state:
-                logger.info(f"Состояние уже установлено: {new_state}")
-                return
-            try:
-                # Переход к новому состоянию с помощью соответствующего триггера
-                triggers[new_state]()
-            except Exception as e:
-                logger.error("Ошибка при изменении состояния:", str(e))
+
+        if new_state not in triggers:
+            logger.error(f"Invalid target state: {new_state}")
+            return
+
+        if self.state == new_state:
+            logger.info(f"Already in target state: {new_state}")
+            return
+
+        try:
+            logger.info(f"Changing state from '{self.state}' to '{new_state}'")
+            triggers[new_state]()
+            logger.info(f"State changed to: {self.state}")
+        except Exception as e:
+            logger.error(f"Error during state change to '{new_state}': {e}")
