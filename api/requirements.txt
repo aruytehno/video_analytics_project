@@ -5,5 +5,5 @@ uvicorn==0.15.0
 transitions
 opencv-python==4.5.3.56
 asyncpg==0.25.0
-aiokafka==0.8.4
+aiokafka
 pydantic==1.8.2
