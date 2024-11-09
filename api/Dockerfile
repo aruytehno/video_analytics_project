@@ -1,15 +1,15 @@
-# Dockerfile для api
+# api/Dockerfile
 FROM python:3.9-slim
-
 WORKDIR /app
 
-# Копируем весь проект
-COPY . /app
+# Скопировать API файлы и orchestrator из корневой директории
+COPY ./api /app
+COPY ./orchestrator /app/orchestrator
 
-# Устанавливаем зависимости
-RUN pip install -r requirements.txt
+# Установка зависимостей
+RUN pip install -r /app/requirements.txt
 
-# Указываем PYTHONPATH, чтобы найти orchestrator
-ENV PYTHONPATH=/app:$PYTHONPATH
+# Установите переменную PYTHONPATH
+ENV PYTHONPATH="/app:/app/orchestrator"
 
 CMD ["python", "main.py"]
