@@ -1,4 +1,4 @@
-# Используем slim-образ Python
+# Легковесный Python-образ
 FROM python:3.9-slim
 
 # Установка необходимых системных библиотек
@@ -7,16 +7,22 @@ RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Копируем requirements и устанавливаем зависимости
+# Установка рабочей директории
+WORKDIR /app
+
+# Копирование скрипта wait-for-it.sh и установка разрешений
+COPY ../wait-for-it.sh /app/wait-for-it.sh
+RUN chmod +x /app/wait-for-it.sh
+
+# Копирование requirements.txt и установка зависимостей
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# Копируем приложение и задаем рабочую директорию
+# Копирование исходного кода приложения
 COPY . /app
-WORKDIR /app
 
-# Устанавливаем переменную окружения PYTHONPATH
+# Установка переменной окружения
 ENV PYTHONPATH="/app"
 
-# Запуск с помощью Uvicorn для асинхронного сервера
+# Запуск сервера Uvicorn
 CMD ["uvicorn", "inference:app", "--host", "0.0.0.0", "--port", "8000"]

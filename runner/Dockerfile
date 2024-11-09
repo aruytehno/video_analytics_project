@@ -8,6 +8,10 @@ WORKDIR /app
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Копирование скрипта wait-for-it.sh и установка разрешений
+COPY ../wait-for-it.sh /app/wait-for-it.sh
+RUN chmod +x /app/wait-for-it.sh
+
 # Копирование исходного кода приложения
 COPY . .
 
