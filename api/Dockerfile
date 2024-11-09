@@ -1,15 +1,26 @@
-# api/Dockerfile
-FROM python:3.9-slim
+# Используем легкий образ Python
+FROM python:3.9-alpine
+
+# Устанавливаем необходимые системные зависимости
+RUN apk update && apk add --no-cache \
+    libgl1-mesa-glx \
+    libstdc++ \
+    && rm -rf /var/cache/apk/*
+
+# Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Скопировать API файлы и orchestrator из корневой директории
+# Копируем все файлы приложения
 COPY ./api /app
 COPY ./orchestrator /app/orchestrator
+COPY ./runner /app/runner
+COPY ./requirements.txt /app/requirements.txt
 
-# Установка зависимостей
-RUN pip install -r /app/requirements.txt
+# Устанавливаем зависимости одним RUN слоем
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
-# Установите переменную PYTHONPATH
+# Устанавливаем переменную окружения PYTHONPATH
 ENV PYTHONPATH="/app:/app/orchestrator"
 
-CMD ["python", "main.py"]
+# Запускаем приложение с Uvicorn
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

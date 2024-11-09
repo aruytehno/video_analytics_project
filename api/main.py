@@ -1,11 +1,10 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-
 from orchestrator.orchestrator import Orchestrator
 
 app = FastAPI()
 
-# Создаем один экземпляр Orchestrator на уровне модуля, чтобы состояние сохранялось между запросами
+# Инициализация orchestrator
 orchestrator = Orchestrator()
 
 
@@ -20,7 +19,7 @@ class StateChange(BaseModel):
 
 
 @app.get("/scenario/{id}")
-def get_scenario(id: int):
+async def get_scenario(id: int):
     """
     Получает текущий сценарий и его состояние.
 
@@ -34,7 +33,7 @@ def get_scenario(id: int):
 
 
 @app.post("/scenario/{id}/state")
-def change_scenario_state(id: int, state_change: StateChange):
+async def change_scenario_state(id: int, state_change: StateChange):
     """
     Изменяет состояние сценария.
 
@@ -60,7 +59,7 @@ def change_scenario_state(id: int, state_change: StateChange):
 
 
 @app.get("/health")
-def health_check():
+async def health_check():
     """
     Проверка состояния API.
 
