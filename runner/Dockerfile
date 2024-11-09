@@ -5,8 +5,8 @@ FROM python:3.9-slim
 WORKDIR /app
 
 # Копирование requirements.txt и установка зависимостей
-COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r requirements.txt
+COPY wait-for-it.sh /app/wait-for-it.sh
+
 
 # Копирование скрипта wait-for-it.sh и установка разрешений
 COPY ../wait-for-it.sh /app/wait-for-it.sh

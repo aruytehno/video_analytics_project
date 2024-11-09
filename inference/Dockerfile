@@ -11,8 +11,8 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Копирование скрипта wait-for-it.sh и установка разрешений
-COPY ../wait-for-it.sh /app/wait-for-it.sh
-RUN chmod +x /app/wait-for-it.sh
+COPY wait-for-it.sh /app/wait-for-it.sh
+
 
 # Копирование requirements.txt и установка зависимостей
 COPY requirements.txt .
