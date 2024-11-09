@@ -1,10 +1,22 @@
 import numpy as np
-from fastapi import FastAPI, File, UploadFile
-import requests
+import cv2
+import logging
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from pydantic import BaseModel
 from ultralytics import YOLO
+import requests
 
+# Инициализация приложения и модели
 app = FastAPI()
-model = YOLO("yolov5s.pt")  # пример модели YOLO
+model = YOLO("yolov5s.pt")  # Пример модели YOLO
+
+# Настройка логгирования
+logging.basicConfig(level=logging.INFO)
+
+
+class HealthCheckResponse(BaseModel):
+    status: str
+    details: str = None
 
 
 @app.post("/inference")
@@ -23,13 +35,31 @@ async def inference(file: UploadFile = File(...)):
     - Запускает модель YOLO для предсказания объектов на изображении.
     - Преобразует результаты в читаемый словарь и возвращает их в ответе.
     """
-    image = np.frombuffer(await file.read(), np.uint8)
-    results = model.predict(image)
-    return {"prediction": results.pandas().xyxy[0].to_dict(orient="records")}
+    try:
+        # Валидация файла
+        if file.content_type not in ["image/jpeg", "image/png"]:
+            logging.warning("Unsupported file format: %s", file.content_type)
+            raise HTTPException(status_code=400, detail="Unsupported file format")
+
+        # Преобразование изображения для инференса
+        image = np.frombuffer(await file.read(), np.uint8)
+        image = cv2.imdecode(image, cv2.IMREAD_COLOR)
+        if image is None:
+            raise HTTPException(status_code=400, detail="Invalid image data")
+
+        # Инференс и преобразование результатов
+        results = model.predict(image)
+        predictions = results.pandas().xyxy[0].to_dict(orient="records")
+        logging.info("Inference completed successfully")
+        return {"prediction": predictions}
+
+    except Exception as e:
+        logging.error("Inference error: %s", str(e))
+        raise HTTPException(status_code=500, detail="Inference error")
 
 
-@app.get("/health")
-def health_check():
+@app.get("/health", response_model=HealthCheckResponse)
+async def health_check():
     """
     Проверяет состояние сервиса и зависимостей.
 
@@ -45,6 +75,8 @@ def health_check():
         runner_response = requests.get("http://runner:8001/health")
         orchestrator_response = requests.get("http://orchestrator:8002/health")
         if runner_response.status_code == 200 and orchestrator_response.status_code == 200:
+            logging.info("Health check passed")
             return {"status": "ok"}
     except Exception as e:
+        logging.error("Health check failed: %s", str(e))
         return {"status": "error", "details": str(e)}
