@@ -3,8 +3,8 @@ import requests
 import time
 import logging
 
-# Настройка логгирования
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+# Устанавливаем уровень логирования и создаем логгер для вывода информации.
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -28,7 +28,6 @@ class VideoRunner:
         """
         self.video_source = video_source
         self.inference_url = inference_url
-        logger.info(f"VideoRunner инициализирован с video_source={video_source} и inference_url={inference_url}")
 
     def preprocess_frame(self, frame):
         """
@@ -40,7 +39,8 @@ class VideoRunner:
         Возвращает:
             numpy.ndarray: Кадр, преобразованный в цветовое пространство RGB.
         """
-        return cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        return frame
 
     def process_frame(self, frame):
         """
@@ -57,17 +57,22 @@ class VideoRunner:
         try:
             # Отправка кадра на инференс-сервис через POST-запрос
             response = requests.post(self.inference_url, files={"file": img_encoded.tobytes()})
-            response.raise_for_status()
-            result = response.json()
-            logger.info("Инференс успешен: %s", result)
+            logger.info("Inference response: %s", response.json())
         except requests.RequestException as e:
-            logger.error("Ошибка при отправке запроса на инференс-сервис: %s", e)
-        except ValueError:
-            logger.error("Некорректный ответ от сервиса инференса (ожидался JSON)")
+            logger.error("Ошибка отправки запроса инференсу: %s", e)
 
     def run(self):
         """
-        Запускает цикл обработки видео: считывает кадры и отправляет их на инференс.
+        Запускает цикл обработки видео: считывает кадры, отправляет их на инференс и обрабатывает результат.
+
+        Процесс:
+            - Открывает видеофайл.
+            - Читает и обрабатывает каждый кадр.
+            - После завершения видео или ошибки освобождает ресурсы.
+
+        Исключения:
+            - Логирует ошибку, если не удалось открыть видеоисточник.
+            - Прерывает цикл обработки, если достигнут конец видео.
         """
         # Открывает видеоисточник
         cap = cv2.VideoCapture(self.video_source)
@@ -75,7 +80,6 @@ class VideoRunner:
             logger.error("Не удалось открыть видеоисточник")
             return
 
-        logger.info("Начало обработки видео")
         while cap.isOpened():
             # Чтение кадра
             ret, frame = cap.read()
@@ -83,14 +87,12 @@ class VideoRunner:
                 logger.info("Конец видео")
                 break
 
-            try:
-                frame = self.preprocess_frame(frame)
-                self.process_frame(frame)
-                time.sleep(0.1)
-            except Exception as e:
-                logger.error("Ошибка при обработке кадра: %s", e)
-                break
+            # Предобработка кадра и отправка на инференс
+            frame = self.preprocess_frame(frame)
+            self.process_frame(frame)
+
+            # Устанавливаем интервал между обработкой кадров для контроля нагрузки на систему
+            time.sleep(0.1)
 
         # Освобождаем ресурсы
         cap.release()
-        logger.info("Видеообработка завершена")

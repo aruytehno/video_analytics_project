@@ -1,19 +1,14 @@
-# Легковесный Python-образ
+# Используем легковесный Python-образ
 FROM python:3.9-slim
 
-# Установка рабочей директории
+# Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Копирование скрипта wait-for-it.sh и установка разрешений
-COPY wait-for-it.sh /app/wait-for-it.sh
-RUN chmod +x /app/wait-for-it.sh
-
-# Копирование requirements.txt и установка зависимостей
-COPY requirements.txt /app/
-RUN pip install -r requirements.txt
-
-# Копирование исходного кода приложения
+# Копируем содержимое директории orchestrator в контейнер
 COPY . .
 
-# Запуск Orchestrator
+# Устанавливаем зависимости, если есть requirements.txt
+RUN pip install -r requirements.txt
+
+# Запускаем скрипт orchestrator.py при старте контейнера
 CMD ["python", "orchestrator.py"]

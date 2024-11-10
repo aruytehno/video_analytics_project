@@ -2,8 +2,3 @@ Flask==2.0.3
 requests==2.26.0
 fastapi==0.68.0
 uvicorn==0.15.0
-transitions
-opencv-python==4.5.3.56
-asyncpg==0.25.0
-aiokafka
-pydantic==1.8.2
